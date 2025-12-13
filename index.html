@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Teste Banner - GitHub</title>
+
+    <!-- Favicons (ajuste se você também subir a pasta icons/) -->
+    <link rel="icon" type="image/x-icon" href="icons/favicon.ico" />
+    <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png" />
+    <link rel="icon" type="image/png" sizes="48x48" href="icons/icon-48.png" />
+    <link rel="icon" type="image/png" sizes="96x96" href="icons/icon-96.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="icons/icon-180.png" />
+    <link rel="manifest" href="manifest.json" />
+    <meta name="theme-color" content="#0A9CCF" />
+
+    <style>
+      body { margin: 0; font-family: system-ui, Arial, sans-serif; background:#f5f7fb; }
+      .wrap { max-width: 980px; margin: 0 auto; padding: 16px; }
+      .banner {
+        background: #fff;
+        border: 1px solid #e6e9ef;
+        border-radius: 14px;
+        padding: 14px;
+        box-shadow: 0 6px 18px rgba(0,0,0,.06);
+      }
+      .banner img {
+        width: 100%;
+        height: auto;
+        display: block;
+        border-radius: 10px;
+      }
+      .row { display:flex; gap:12px; flex-wrap:wrap; margin-top:14px; }
+      .card {
+        flex: 1 1 240px;
+        background:#fff;
+        border:1px solid #e6e9ef;
+        border-radius: 14px;
+        padding: 14px;
+      }
+      code { background:#eef2ff; padding:2px 6px; border-radius:6px; }
+      .ok { color:#0a7; font-weight:700; }
+      .bad { color:#c00; font-weight:700; }
+    </style>
+  </head>
+
+  <body>
+    <div class="wrap">
+      <h1>Teste de imagem do GitHub</h1>
+      <p>
+        Este HTML assume que você subiu o arquivo em:
+        <code>img/banner.png</code>
+      </p>
+
+      <div class="banner">
+        <!-- CASO A: arquivo real dentro do repo -->
+        <img
+          id="bannerImg"
+          src="img/banner.png"
+          alt="Banner"
+          onload="document.getElementById('status').textContent='OK: carregou img/banner.png'; document.getElementById('status').className='ok';"
+          onerror="document.getElementById('status').textContent='ERRO: não achou img/banner.png (confira nome/pasta/commit)'; document.getElementById('status').className='bad';"
+        />
+      </div>
+
+      <div class="row">
+        <div class="card">
+          <div id="status" class="bad">Carregando...</div>
+          <p style="margin:10px 0 0">
+            Se der erro:
+            <ul>
+              <li>confira se o arquivo está exatamente em <code>img/banner.png</code></li>
+              <li>confira maiúsculas/minúsculas (<code>Banner.png</code ≠ <code>banner.png</code>)</li>
+              <li>confira se você fez <b>Commit changes</b></li>
+            </ul>
+          </p>
+        </div>
+
+        <div class="card">
+          <b>Estrutura esperada do repo:</b>
+          <pre style="margin:10px 0 0; white-space:pre-wrap">
+/ (raiz)
+  index.html
+  /img
+    banner.png
+          </pre>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
