@@ -1,65 +1,2122 @@
-<!doctype html>
-<html lang="pt-br">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Teste imagem GitHub/Vercel</title>
-  <style>
-    body{font-family:Arial,system-ui;margin:0;background:#f5f7fb}
-    .wrap{max-width:900px;margin:40px auto;padding:0 16px}
-    .card{background:#fff;border-radius:14px;padding:18px;box-shadow:0 10px 30px rgba(0,0,0,.08)}
-    .ok{color:#0a7a2f;font-weight:700}
-    .err{color:#b00020;font-weight:700}
-    img{max-width:100%;height:auto;border-radius:12px;border:1px solid #e6e8ef}
-    code{background:#f1f3f8;padding:2px 6px;border-radius:8px}
-    ul{margin:10px 0 0 18px}
-  </style>
-</head>
-<body>
-  <div class="wrap">
-    <div class="card">
-      <h1>Teste de imagem do GitHub</h1>
-      <p>Este HTML tenta carregar: <code>./img/banner.png</code></p>
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Catálogo de Excursiones</title>
+    <base target="_top" />
 
-      <img id="banner" alt="Banner" src="./img/banner.png?v=1" />
+    <!-- Bootstrap 5 -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    />
 
-      <p id="status" style="margin-top:12px"></p>
+    <style>
+      body {
+        background: #f5f5f5;
+      }
 
-      <hr style="border:none;border-top:1px solid #eee;margin:16px 0">
+      .app-container {
+        max-width: 100%;
+        margin: 0 auto;
+        padding: 0.75rem;
+      }
 
-      <div>
-        <div><b>Estrutura esperada do repo:</b></div>
-        <pre style="background:#0b1020;color:#d6deeb;padding:12px;border-radius:12px;overflow:auto">
-/ (raiz)
-  index.html
-  /img
-    banner.png
-        </pre>
+      .category-card,
+      .service-card {
+        border-radius: 0.8rem;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+        border: none;
+      }
 
-        <div><b>Se der erro:</b></div>
-        <ul>
-          <li>confira se você subiu mesmo o arquivo em <code>img/banner.png</code></li>
-          <li>confira maiúsculas/minúsculas: <code>banner.png</code> ≠ <code>Banner.png</code></li>
-          <li>confira se clicou <b>Commit changes</b></li>
-          <li>teste abrir direto: <code>/img/banner.png</code></li>
-        </ul>
+      .category-card:hover,
+      .service-card:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
+        transition: all 0.15s ease-in-out;
+      }
+
+      .category-icon {
+        font-size: 1.8rem;
+      }
+
+      .badge-price {
+        font-size: 1rem;
+        background-color: #198754 !important;
+        color: #fff;
+      }
+
+      .floating-cart-btn {
+        position: fixed;
+        right: 1rem;
+        top: 1rem;
+        z-index: 1050;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      }
+
+      .minicard-text {
+        font-size: 0.85rem;
+      }
+
+      .modal-fullscreen-custom .modal-dialog {
+        margin: 0;
+        max-width: 100%;
+        height: 100%;
+      }
+
+      .modal-fullscreen-custom .modal-content {
+        border-radius: 0;
+        height: 100%;
+      }
+
+      .modal-fullscreen-custom .modal-body {
+        overflow-y: auto;
+        padding-bottom: 5rem;
+      }
+
+      .service-tag {
+        font-size: 0.75rem;
+      }
+
+      .loading-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(255, 255, 255, 0.9);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 2000;
+      }
+
+      #cartFeedback {
+        font-size: 0.85rem;
+        z-index: 2001;
+      }
+
+      @media (min-width: 576px) {
+        .app-container {
+          max-width: 100%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Overlay de carregamento -->
+    <div id="loadingOverlay" class="loading-overlay">
+      <div class="text-center">
+        <div class="spinner-border mb-2" role="status"></div>
+        <div class="fw-semibold">Cargando catálogo...</div>
       </div>
     </div>
-  </div>
 
-  <script>
-    const img = document.getElementById('banner');
-    const status = document.getElementById('status');
+    <!-- Feedback ao adicionar itens -->
+    <div
+      id="cartFeedback"
+      class="position-fixed bottom-0 start-50 translate-middle-x mb-3 px-3 py-2 bg-dark text-white rounded shadow d-none"
+    ></div>
 
-    img.onload = () => {
-      status.innerHTML = '<span class="ok">OK: carregou ./img/banner.png</span>';
-    };
+    <!-- MODAL LOGIN -->
+    <div
+      class="modal fade"
+      id="loginModal"
+      tabindex="-1"
+      aria-hidden="true"
+      data-bs-backdrop="static"
+      data-bs-keyboard="false"
+    >
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="loginTitle">Ingresar</h5>
+          </div>
+          <div class="modal-body">
+            <div class="mb-2">
+              <label
+                for="loginNameInput"
+                class="form-label mb-1"
+                id="loginNameLabel"
+                style="font-size: 0.85rem"
+                >Tu nombre</label
+              >
+              <input
+                type="text"
+                id="loginNameInput"
+                class="form-control form-control-sm"
+                placeholder="Ej: usuario..."
+              />
+              <div
+                id="loginError"
+                class="text-danger mt-1"
+                style="font-size: 0.8rem; display: none"
+              ></div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-primary btn-sm"
+              id="loginButton"
+              onclick="handleLoginSubmit()"
+            >
+              Entrar
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
 
-    img.onerror = () => {
-      status.innerHTML =
-        '<span class="err">ERRO: não achou ./img/banner.png</span><br>' +
-        'No GitHub: vá em <b>img/</b> → <b>Add file</b> → <b>Upload files</b> e envie <b>banner.png</b>.';
-    };
-  </script>
-</body>
+    <!-- MODAL: Agregando al carrito -->
+    <div
+      class="modal fade"
+      id="addingToCartModal"
+      tabindex="-1"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-body text-center">
+            <p id="addingToCartMessage" class="mb-3">
+              Agregando al carrito...
+            </p>
+            <button
+              type="button"
+              class="btn btn-primary btn-sm"
+              id="addingToCartOpenCartBtn"
+              onclick="openCartFromPopup()"
+            >
+              Abrir carrito
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- APP -->
+    <div class="app-container">
+      <!-- Cabeçalho -->
+      <header class="mb-3 text-center">
+        <div class="mb-2">
+          <img
+            id="logoImg"
+            src=""
+            alt="Logo"
+            class="img-fluid d-none"
+            style="max-height: 80px"
+          />
+        </div>
+        <h1 class="h4 mb-1" id="appTitle">Catálogo de excursiones</h1>
+        <p
+          class="text-muted mb-0"
+          id="appSubtitle"
+          style="font-size: 0.85rem"
+        >
+          Toca una categoría o usá la búsqueda para armar tu pedido.
+        </p>
+
+        <!-- Idioma e moeda -->
+        <div class="d-flex justify-content-center gap-2 mt-2">
+          <div class="btn-group btn-group-sm" role="group" aria-label="Idioma">
+            <button
+              type="button"
+              class="btn btn-outline-secondary active"
+              id="btnLangEs"
+              onclick="setLanguage('es')"
+            >
+              ES
+            </button>
+            <button
+              type="button"
+              class="btn btn-outline-secondary"
+              id="btnLangPt"
+              onclick="setLanguage('pt')"
+            >
+              PT
+            </button>
+            <button
+              type="button"
+              class="btn btn-outline-secondary"
+              id="btnLangEn"
+              onclick="setLanguage('en')"
+            >
+              EN
+            </button>
+          </div>
+          <div class="btn-group btn-group-sm" role="group" aria-label="Moneda">
+            <button
+              type="button"
+              class="btn btn-outline-secondary active"
+              id="btnCurrArs"
+              onclick="setCurrency('ars')"
+            >
+              ARS
+            </button>
+            <button
+              type="button"
+              class="btn btn-outline-secondary"
+              id="btnCurrBrl"
+              onclick="setCurrency('brl')"
+            >
+              BRL
+            </button>
+            <button
+              type="button"
+              class="btn btn-outline-secondary"
+              id="btnCurrUsd"
+              onclick="setCurrency('usd')"
+            >
+              USD
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <!-- HOME (busca + categorias) -->
+      <div id="pageHome">
+        <!-- BUSCA -->
+        <section class="mb-3">
+          <label
+            for="searchInput"
+            class="form-label mb-1"
+            id="searchLabel"
+            style="font-size: 0.85rem"
+          >
+            Buscar excursiones
+          </label>
+          <input
+            type="text"
+            id="searchInput"
+            class="form-control form-control-sm"
+            placeholder="Ej: gourmet, chaltén, navegación..."
+            oninput="handleSearchInput()"
+          />
+          <small class="text-muted" style="font-size: 0.75rem">
+            Podés agregar diretamente a la lista desde los resultados.
+          </small>
+          <div id="searchResultsContainer" class="row g-2 mt-2"></div>
+        </section>
+
+        <!-- CATEGORIAS -->
+        <section>
+          <h2 class="h6 mb-2" id="categoriesTitle">Categorías</h2>
+          <div id="categoriesContainer" class="row g-2"></div>
+          <div
+            id="noCategoriesMessage"
+            class="alert alert-warning py-2 px-3 mt-2 d-none"
+            style="font-size: 0.85rem"
+          >
+            No se encontró ninguna categoría en la hoja
+            <strong>Catalogo</strong>.
+          </div>
+        </section>
+      </div>
+
+      <!-- PÁGINA SERVIÇOS -->
+      <div id="pageServices" class="d-none">
+        <div class="d-flex align-items-center mb-2">
+          <button
+            type="button"
+            class="btn btn-sm btn-outline-secondary me-2"
+            id="btnServicesBack"
+            onclick="goBackToHomeFromServices()"
+          >
+            <i class="fa-solid fa-arrow-left"></i>
+          </button>
+          <div>
+            <h2 class="h6 mb-0" id="servicesPageTitle">Opciones</h2>
+            <small class="text-muted" id="servicesPageSubtitle"></small>
+          </div>
+        </div>
+
+        <div id="servicesPageContainer" class="row g-2"></div>
+        <div
+          id="noServicesPageMessage"
+          class="alert alert-info py-2 px-3 mt-3 d-none"
+          style="font-size: 0.85rem"
+        ></div>
+      </div>
+    </div>
+
+    <!-- Botão flotante do carrinho -->
+    <button
+      type="button"
+      class="btn btn-primary rounded-pill floating-cart-btn d-none"
+      id="cartFloatingBtn"
+      onclick="openCartModal()"
+    >
+      <i class="fa-solid fa-cart-shopping me-1"></i>
+      <span id="cartCountLabel">0</span>
+    </button>
+
+    <!-- MODAL: MÁS INFO -->
+    <div
+      class="modal fade"
+      id="moreInfoModal"
+      tabindex="-1"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="moreInfoTitle">Más información</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Cerrar"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <div
+              id="moreInfoBody"
+              style="white-space: pre-wrap; font-size: 0.9rem"
+            ></div>
+            <button
+              type="button"
+              class="btn btn-sm btn-outline-primary mt-2"
+              id="copyInfoButton"
+              onclick="copyMoreInfoToClipboard()"
+            >
+              Copiar texto
+            </button>
+            <div
+              id="copyInfoFeedback"
+              class="mt-1"
+              style="font-size: 0.8rem; display: none"
+            ></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL: CARRINHO -->
+    <div
+      class="modal fade"
+      id="cartModal"
+      tabindex="-1"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">
+              <i class="fa-solid fa-cart-shopping me-1"></i>
+              <span id="cartTitle">Mi lista</span>
+              <span
+                class="badge bg-secondary ms-2"
+                id="cartModalCountBadge"
+                >0</span
+              >
+            </h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Cerrar"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <div id="cartItemsContainer" class="vstack gap-2"></div>
+            <div
+              id="cartEmptyMessage"
+              class="alert alert-secondary py-2 px-3 mt-2"
+              style="font-size: 0.85rem"
+            >
+              Tu lista está vacía. Agregá excursiones para enviar el pedido.
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-outline-secondary btn-sm"
+              id="btnClearCart"
+              onclick="clearCart()"
+            >
+              Vaciar lista
+            </button>
+            <button
+              type="button"
+              class="btn btn-success"
+              id="btnSendWhatsapp"
+              onclick="openCheckoutModal()"
+            >
+              Enviar pedido por WhatsApp
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL: CHECKOUT -->
+    <div
+      class="modal fade"
+      id="checkoutModal"
+      tabindex="-1"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="checkoutTitle">Datos para el envío</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Cerrar"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <div class="mb-2">
+              <label
+                class="form-label mb-1"
+                for="guestNameInput"
+                id="guestNameLabel"
+                >Nombre del pasajero (obligatorio)</label
+              >
+              <input
+                type="text"
+                id="guestNameInput"
+                class="form-control form-control-sm"
+                placeholder="Nombre del titular de la reserva"
+              />
+            </div>
+            <div class="mb-2">
+              <label
+                class="form-label mb-1"
+                for="guestPhoneInput"
+                id="guestPhoneLabel"
+                >Teléfono de contacto (obligatorio)</label
+              >
+              <input
+                type="tel"
+                id="guestPhoneInput"
+                class="form-control form-control-sm"
+                placeholder="+54 9 ..."
+              />
+            </div>
+            <div class="mb-3">
+              <label
+                class="form-label mb-1"
+                for="hotelInput"
+                id="hotelLabel"
+                >Hospedaje (hotel/departamento) (opcional)</label
+              >
+              <input
+                type="text"
+                id="hotelInput"
+                class="form-control form-control-sm"
+                placeholder="Nombre del hotel o alojamiento"
+              />
+              <div class="form-text" style="font-size: 0.75rem">
+                Recomendado para operaciones, pero no obligatorio.
+              </div>
+            </div>
+
+            <h6 class="mb-2" id="datesSectionTitle">
+              Fechas (opcional, por excursión)
+            </h6>
+            <div id="checkoutItemsContainer" class="vstack gap-2"></div>
+            <small class="text-muted" style="font-size: 0.75rem">
+              Si todavía no sabés las fechas, podés dejar en blanco.
+            </small>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary btn-sm"
+              id="btnCheckoutBack"
+              data-bs-dismiss="modal"
+            >
+              Volver
+            </button>
+            <button
+              type="button"
+              class="btn btn-success"
+              onclick="sendWhatsAppRequest()"
+            >
+              Confirmar y enviar
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+      /* ESTADO GLOBAL */
+
+      let catalogData = {
+        categories: [],
+        items: [],
+        headers: [],
+        logoUrl: '',
+        rates: { brl: null, usd: null },
+        defaultPhone: '',
+        obsCols: { es: -1, pt: -1, en: -1 }
+      };
+
+      let cart = [];
+      let currentServiceItems = [];
+      let currentCategoryForServices = null;
+      let searchResults = [];
+
+      let currentUserContext = {
+        userName: '',
+        empresa: '',
+        prefijo: '',
+        id: ''
+      };
+
+      let currentLang = 'es';
+      let currentCurrency = 'ars';
+
+      let exchangeRates = { brl: null, usd: null };
+      let whatsappPhone = '5492901533382';
+
+      let loginModalInstance = null;
+      let addingToCartModalInstance = null;
+
+      // índices de OBS na planilha (0-based)
+      let obsColIndexes = { es: null, pt: null, en: null };
+      let obsColumnsComputed = false;
+
+      // colunas principais (0-based)
+      const TITLE_MAIN_COL_INDEX = 0; // tipo/grupo
+      const TITLE_ACTIVITY_COL_INDEX = 1; // Actividad
+      const SERVICE_TYPE_COL_INDEX = 2; // Categoria
+
+      const I18N = {
+        es: {
+          appTitle: 'Catálogo de excursiones',
+          appSubtitle:
+            'Toca una categoría o usá la búsqueda para armar tu pedido.',
+          searchLabel: 'Buscar excursiones',
+          searchPlaceholder: 'Ej: gourmet, chaltén, navegación...',
+          categoriesTitle: 'Categorías',
+          categoryHint: 'Selecciona la excursión para agregar a la lista',
+          cartTitle: 'Mi lista',
+          cartEmpty:
+            'Tu lista está vacía. Agregá excursiones para enviar el pedido.',
+          btnMoreInfo: 'MÁS INFO',
+          btnAddToList: 'Añadir a la lista',
+          btnClearCart: 'Vaciar lista',
+          btnSendWhatsapp: 'Enviar pedido por WhatsApp',
+          checkoutTitle: 'Datos para el envío',
+          guestNameLabel: 'Nombre del pasajero (obligatorio)',
+          guestPhoneLabel: 'Teléfono de contacto (obligatorio)',
+          hotelLabel: 'Hospedaje (hotel/departamento) (opcional)',
+          datesSectionTitle: 'Fechas (opcional, por excursión)',
+          dateLabelPerService: 'Fecha de la excursión (opcional)',
+          copyInfoButton: 'Copiar texto',
+          copyInfoSuccess: 'Copiado.',
+          copyInfoFail: 'No se pudo copiar.',
+          moreInfoTitle: 'Más información',
+          moreInfoEmpty: 'Sin información adicional.',
+          addingToCartMsg: 'Agregando al carrito...',
+          addingToCartDone: 'Agregado al carrito.',
+          addingToCartOpenCartBtn: 'Abrir carrito',
+          cartFeedback: function (count, totalStr) {
+            return (
+              'Tenés ' +
+              count +
+              ' servicio(s) en la lista. Total estimado: ' +
+              totalStr +
+              '.'
+            );
+          },
+          loginTitle: 'Ingresar',
+          loginNameLabel: 'Tu nombre',
+          loginButton: 'Entrar',
+          loginErrorEmpty: 'Ingresá tu nombre.',
+          loginErrorUserNotFound:
+            'El nombre no coincide con la lista de usuarios. Verificá y probá de nuevo.',
+          loginErrorGenericConfig:
+            'No se pudo validar la configuración de login (se usará un perfil genérico).',
+          alertCartEmpty: 'Tu lista está vacía.',
+          alertGuestNameRequired: 'Ingresá el nombre del pasajero.',
+          alertGuestPhoneRequired: 'Ingresá el teléfono de contacto.',
+          searchNoResults: 'Sin resultados para esta búsqueda.',
+          noServicesMessage: 'No se encontraron ítems para esta categoría.',
+          confirmClearCart: '¿Vaciar toda la lista de excursiones?',
+          cartDeleteLabel: 'Eliminar',
+          btnCheckoutBack: 'Volver'
+        },
+        pt: {
+          appTitle: 'Catálogo de excursões',
+          appSubtitle:
+            'Toque uma categoria ou use a busca para montar seu pedido.',
+          searchLabel: 'Buscar excursões',
+          searchPlaceholder: 'Ex: gourmet, chaltén, navegação...',
+          categoriesTitle: 'Categorias',
+          categoryHint: 'Selecione o passeio para adicionar à lista',
+          cartTitle: 'Minha lista',
+          cartEmpty:
+            'Sua lista está vazia. Adicione excursões para enviar o pedido.',
+          btnMoreInfo: 'MAIS INFO',
+          btnAddToList: 'Adicionar à lista',
+          btnClearCart: 'Esvaziar lista',
+          btnSendWhatsapp: 'Enviar pedido por WhatsApp',
+          checkoutTitle: 'Dados para envio',
+          guestNameLabel: 'Nome do passageiro (obrigatório)',
+          guestPhoneLabel: 'Telefone de contato (obrigatório)',
+          hotelLabel: 'Hospedagem (hotel/apartamento) (opcional)',
+          datesSectionTitle: 'Datas (opcional, por passeio)',
+          dateLabelPerService: 'Data do passeio (opcional)',
+          copyInfoButton: 'Copiar texto',
+          copyInfoSuccess: 'Copiado.',
+          copyInfoFail: 'Não foi possível copiar.',
+          moreInfoTitle: 'Mais informações',
+          moreInfoEmpty: 'Sem informações adicionais.',
+          addingToCartMsg: 'Adicionando ao carrinho...',
+          addingToCartDone: 'Adicionado ao carrinho.',
+          addingToCartOpenCartBtn: 'Abrir carrinho',
+          cartFeedback: function (count, totalStr) {
+            return (
+              'Você tem ' +
+              count +
+              ' serviço(s) na lista. Total estimado: ' +
+              totalStr +
+              '.'
+            );
+          },
+          loginTitle: 'Entrar',
+          loginNameLabel: 'Seu nome',
+          loginButton: 'Entrar',
+          loginErrorEmpty: 'Informe seu nome.',
+          loginErrorUserNotFound:
+            'O nome não coincide com a lista de usuários. Verifique e tente novamente.',
+          loginErrorGenericConfig:
+            'Não foi possível validar a configuração de login (será usado um perfil genérico).',
+          alertCartEmpty: 'Sua lista está vazia.',
+          alertGuestNameRequired: 'Informe o nome do passageiro.',
+          alertGuestPhoneRequired: 'Informe o telefone de contato.',
+          searchNoResults: 'Sem resultados para esta busca.',
+          noServicesMessage:
+            'Nenhum item encontrado para esta categoria.',
+          confirmClearCart: 'Esvaziar toda a lista de excursões?',
+          cartDeleteLabel: 'Excluir',
+          btnCheckoutBack: 'Voltar'
+        },
+        en: {
+          appTitle: 'Tour catalog',
+          appSubtitle:
+            'Tap a category or use search to build your request.',
+          searchLabel: 'Search tours',
+          searchPlaceholder: 'E.g. gourmet, chaltén, navigation...',
+          categoriesTitle: 'Categories',
+          categoryHint: 'Select the tour to add it to the list',
+          cartTitle: 'My list',
+          cartEmpty:
+            'Your list is empty. Add tours to send your request.',
+          btnMoreInfo: 'MORE INFO',
+          btnAddToList: 'Add to list',
+          btnClearCart: 'Empty list',
+          btnSendWhatsapp: 'Send request via WhatsApp',
+          checkoutTitle: 'Details to send',
+          guestNameLabel: 'Passenger name (required)',
+          guestPhoneLabel: 'Contact phone (required)',
+          hotelLabel: 'Accommodation (hotel/apartment) (optional)',
+          datesSectionTitle: 'Dates (optional, per tour)',
+          dateLabelPerService: 'Tour date (optional)',
+          copyInfoButton: 'Copy text',
+          copyInfoSuccess: 'Copied.',
+          copyInfoFail: 'Could not copy.',
+          moreInfoTitle: 'More information',
+          moreInfoEmpty: 'No additional information.',
+          addingToCartMsg: 'Adding to cart...',
+          addingToCartDone: 'Added to cart.',
+          addingToCartOpenCartBtn: 'Open cart',
+          cartFeedback: function (count, totalStr) {
+            return (
+              'You have ' +
+              count +
+              ' service(s) in the list. Estimated total: ' +
+              totalStr +
+              '.'
+            );
+          },
+          loginTitle: 'Sign in',
+          loginNameLabel: 'Your name',
+          loginButton: 'Enter',
+          loginErrorEmpty: 'Please type your name.',
+          loginErrorUserNotFound:
+            'Name does not match the user list. Check and try again.',
+          loginErrorGenericConfig:
+            'Login configuration could not be validated (a generic profile will be used).',
+          alertCartEmpty: 'Your list is empty.',
+          alertGuestNameRequired: 'Please enter the passenger name.',
+          alertGuestPhoneRequired: 'Please enter the contact phone.',
+          searchNoResults: 'No results for this search.',
+          noServicesMessage: 'No items found for this category.',
+          confirmClearCart: 'Empty all tours from the list?',
+          cartDeleteLabel: 'Delete',
+          btnCheckoutBack: 'Back'
+        }
+      };
+
+      document.addEventListener('DOMContentLoaded', function () {
+        google.script.run
+          .withSuccessHandler(function (data) {
+            catalogData =
+              data || {
+                categories: [],
+                items: [],
+                headers: [],
+                logoUrl: '',
+                rates: { brl: null, usd: null },
+                defaultPhone: '',
+                obsCols: { es: -1, pt: -1, en: -1 }
+              };
+
+            if (!catalogData.logoUrl) {
+              catalogData.logoUrl = './banner.png';
+            }
+
+            if (catalogData.logoUrl) {
+              const img = document.getElementById('logoImg');
+              img.src = catalogData.logoUrl;
+              img.classList.remove('d-none');
+            }
+
+            if (catalogData.rates) {
+              exchangeRates.brl = catalogData.rates.brl || null;
+              exchangeRates.usd = catalogData.rates.usd || null;
+            }
+            if (catalogData.defaultPhone) {
+              whatsappPhone = String(catalogData.defaultPhone);
+            }
+
+            if (data && data.obsCols) {
+              obsColIndexes.es = data.obsCols.es;
+              obsColIndexes.pt = data.obsCols.pt;
+              obsColIndexes.en = data.obsCols.en;
+              obsColumnsComputed = true;
+            }
+
+            renderCategories();
+            applyTranslations();
+
+            document.getElementById('loadingOverlay').style.display = 'none';
+
+            const cartBtn = document.getElementById('cartFloatingBtn');
+            cartBtn.classList.remove('d-none');
+            cartBtn.classList.remove('btn-danger');
+            cartBtn.classList.add('btn-primary');
+            updateCartUI();
+
+            loginModalInstance = new bootstrap.Modal(
+              document.getElementById('loginModal')
+            );
+            loginModalInstance.show();
+
+            document.addEventListener('keydown', function (e) {
+              if (e.key === 'Escape' || e.key === 'Esc') {
+                closeAllModals();
+              }
+            });
+          })
+          .withFailureHandler(function (err) {
+            console.error(err);
+            document.getElementById('loadingOverlay').innerHTML =
+              '<div class="text-center text-danger">Error al cargar datos.</div>';
+          })
+          .getCatalogoData();
+      });
+
+      function closeAllModals() {
+        const ids = [
+          'loginModal',
+          'moreInfoModal',
+          'cartModal',
+          'checkoutModal',
+          'addingToCartModal'
+        ];
+        ids.forEach(function (id) {
+          const el = document.getElementById(id);
+          if (!el) return;
+          const instance =
+            bootstrap.Modal.getInstance(el) ||
+            bootstrap.Modal.getOrCreateInstance(el);
+          instance.hide();
+        });
+      }
+
+      /* IDIOMA & MOEDA */
+
+      function setLanguage(lang) {
+        if (lang === 'pt' || lang === 'en') {
+          currentLang = lang;
+        } else {
+          currentLang = 'es';
+        }
+        updateLanguageButtons();
+        applyTranslations();
+        renderCategories();
+        updateCartUI();
+        handleSearchInput();
+
+        const servicesPage = document.getElementById('pageServices');
+        if (
+          servicesPage &&
+          !servicesPage.classList.contains('d-none') &&
+          currentCategoryForServices
+        ) {
+          openServicesModal(currentCategoryForServices);
+        }
+      }
+
+      function setCurrency(curr) {
+        if (curr === 'brl' || curr === 'usd') {
+          currentCurrency = curr;
+        } else {
+          currentCurrency = 'ars';
+        }
+        updateCurrencyButtons();
+        updateCartUI();
+        const q = document
+          .getElementById('searchInput')
+          .value.trim()
+          .toLowerCase();
+        renderSearchResults(q);
+
+        const servicesPage = document.getElementById('pageServices');
+        if (
+          servicesPage &&
+          !servicesPage.classList.contains('d-none') &&
+          currentCategoryForServices
+        ) {
+          openServicesModal(currentCategoryForServices);
+        }
+      }
+
+      function updateLanguageButtons() {
+        const btnEs = document.getElementById('btnLangEs');
+        const btnPt = document.getElementById('btnLangPt');
+        const btnEn = document.getElementById('btnLangEn');
+
+        btnEs.classList.remove('active');
+        btnPt.classList.remove('active');
+        btnEn.classList.remove('active');
+
+        if (currentLang === 'pt') {
+          btnPt.classList.add('active');
+        } else if (currentLang === 'en') {
+          btnEn.classList.add('active');
+        } else {
+          btnEs.classList.add('active');
+        }
+      }
+
+      function updateCurrencyButtons() {
+        const btnArs = document.getElementById('btnCurrArs');
+        const btnBrl = document.getElementById('btnCurrBrl');
+        const btnUsd = document.getElementById('btnCurrUsd');
+
+        btnArs.classList.remove('active');
+        btnBrl.classList.remove('active');
+        btnUsd.classList.remove('active');
+
+        if (currentCurrency === 'brl') {
+          btnBrl.classList.add('active');
+        } else if (currentCurrency === 'usd') {
+          btnUsd.classList.add('active');
+        } else {
+          btnArs.classList.add('active');
+        }
+      }
+
+      function applyTranslations() {
+        const t = I18N[currentLang];
+
+        document.getElementById('appTitle').textContent = t.appTitle;
+        document.getElementById('appSubtitle').textContent = t.appSubtitle;
+        document.getElementById('searchLabel').textContent = t.searchLabel;
+        document.getElementById('searchInput').placeholder =
+          t.searchPlaceholder;
+        document.getElementById('categoriesTitle').textContent =
+          t.categoriesTitle;
+        document.getElementById('cartTitle').textContent = t.cartTitle;
+        document.getElementById('cartEmptyMessage').textContent = t.cartEmpty;
+        document.getElementById('btnClearCart').textContent = t.btnClearCart;
+        document.getElementById('btnSendWhatsapp').textContent =
+          t.btnSendWhatsapp;
+        document.getElementById('checkoutTitle').textContent =
+          t.checkoutTitle;
+        document.getElementById('guestNameLabel').textContent =
+          t.guestNameLabel;
+        document.getElementById('guestPhoneLabel').textContent =
+          t.guestPhoneLabel;
+        document.getElementById('hotelLabel').textContent = t.hotelLabel;
+        document.getElementById('datesSectionTitle').textContent =
+          t.datesSectionTitle;
+        document.getElementById('copyInfoButton').textContent =
+          t.copyInfoButton;
+        document.getElementById('loginTitle').textContent = t.loginTitle;
+        document.getElementById('loginNameLabel').textContent =
+          t.loginNameLabel;
+        document.getElementById('loginButton').textContent = t.loginButton;
+        document.getElementById('moreInfoTitle').textContent =
+          t.moreInfoTitle;
+        document.getElementById('addingToCartMessage').textContent =
+          t.addingToCartMsg;
+        document.getElementById('addingToCartOpenCartBtn').textContent =
+          t.addingToCartOpenCartBtn;
+        document.getElementById('btnCheckoutBack').textContent =
+          t.btnCheckoutBack;
+      }
+
+      /* LOGIN */
+
+      function handleLoginSubmit() {
+        const input = document.getElementById('loginNameInput');
+        const name = input.value.trim();
+        const errorEl = document.getElementById('loginError');
+        const t = I18N[currentLang];
+
+        if (!name) {
+          errorEl.textContent = t.loginErrorEmpty;
+          errorEl.style.display = 'block';
+          return;
+        }
+
+        errorEl.style.display = 'none';
+
+        google.script.run
+          .withSuccessHandler(function (res) {
+            if (!res || !res.ok) {
+              if (res && res.error === 'USER_NOT_FOUND') {
+                errorEl.textContent = t.loginErrorUserNotFound;
+                errorEl.style.display = 'block';
+                return;
+              } else {
+                currentUserContext = {
+                  userName: name,
+                  empresa: '',
+                  prefijo: '',
+                  id: ''
+                };
+                errorEl.textContent = t.loginErrorGenericConfig;
+                errorEl.style.display = 'block';
+                setTimeout(function () {
+                  errorEl.style.display = 'none';
+                }, 2500);
+                if (loginModalInstance) {
+                  loginModalInstance.hide();
+                }
+                return;
+              }
+            }
+
+            currentUserContext = res.user;
+            if (loginModalInstance) {
+              loginModalInstance.hide();
+            }
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) searchInput.focus();
+          })
+          .withFailureHandler(function (err) {
+            console.error(err);
+            currentUserContext = {
+              userName: name,
+              empresa: '',
+              prefijo: '',
+              id: ''
+            };
+            errorEl.textContent = t.loginErrorGenericConfig;
+            errorEl.style.display = 'block';
+            setTimeout(function () {
+              errorEl.style.display = 'none';
+            }, 2500);
+            if (loginModalInstance) {
+              loginModalInstance.hide();
+            }
+          })
+          .loginUser(name);
+      }
+
+      /* BUSCA */
+
+      function handleSearchInput() {
+        const q = document
+          .getElementById('searchInput')
+          .value.trim()
+          .toLowerCase();
+        renderSearchResults(q);
+      }
+
+      function renderSearchResults(query) {
+        const container = document.getElementById('searchResultsContainer');
+        container.innerHTML = '';
+        searchResults = [];
+
+        if (!query) return;
+
+        const t = I18N[currentLang];
+
+        const items = catalogData.items || [];
+        items.forEach(function (item) {
+          const cols = item.cols || [];
+          const textParts = [
+            cols[TITLE_MAIN_COL_INDEX],
+            cols[TITLE_ACTIVITY_COL_INDEX],
+            cols[SERVICE_TYPE_COL_INDEX],
+            item.category
+          ]
+            .map(function (v) {
+              return (v || '').toString().toLowerCase();
+            })
+            .join(' ');
+
+          if (!textParts) return;
+          if (textParts.indexOf(query) === -1) return;
+
+          searchResults.push(item);
+        });
+
+        if (searchResults.length === 0) {
+          container.innerHTML =
+            '<div class="col-12"><div class="alert alert-light border py-2 px-3" style="font-size:0.85rem;">' +
+            escapeHtml(t.searchNoResults) +
+            '</div></div>';
+          return;
+        }
+
+        searchResults.forEach(function (item, idx) {
+          const cols = item.cols || [];
+
+          const tituloA = (cols[TITLE_MAIN_COL_INDEX] || '')
+            .toString()
+            .trim();
+          const tituloB = (cols[TITLE_ACTIVITY_COL_INDEX] || '')
+            .toString()
+            .trim();
+          const name =
+            tituloA && tituloB
+              ? tituloA + ' - ' + tituloB
+              : tituloB || tituloA || 'Excursión';
+
+          let priceNumber = null;
+          const detailsList = [];
+
+          for (
+            let i = 1;
+            i < cols.length && i < (catalogData.headers || []).length;
+            i++
+          ) {
+            const headerRaw =
+              (catalogData.headers && catalogData.headers[i]) ||
+              'Info ' + (i + 1);
+            const header = String(headerRaw).trim();
+            const hLower = header.toLowerCase();
+
+            if (!cols[i]) continue;
+
+            // pula OBS, Comisión e Neto na interface
+            if (hLower.indexOf('obs') === 0) continue;
+            if (
+              hLower.startsWith('comision') ||
+              hLower.startsWith('comisión') ||
+              hLower.startsWith('neto')
+            )
+              continue;
+
+            if (hLower.startsWith('precio')) {
+              const num = normalizePriceNumber(cols[i]);
+              if (num != null) {
+                priceNumber = num;
+              }
+              continue; // preço só vai no badge, não nos detalhes
+            }
+
+            const value = String(cols[i]);
+
+            detailsList.push(
+              '<div class="minicard-text"><strong>' +
+                escapeHtml(header) +
+                ':</strong> ' +
+                '<span>' +
+                escapeHtml(value) +
+                '</span></div>'
+            );
+          }
+
+          const price =
+            priceNumber != null ? formatPriceForUI(priceNumber) : '';
+
+          const categoryText = item.category || '';
+
+          const colDiv = document.createElement('div');
+          colDiv.className = 'col-12 col-sm-6 col-md-4';
+
+          const card = document.createElement('div');
+          card.className = 'card service-card p-2 h-100';
+
+          const priceBadge = price
+            ? '<span class="badge bg-success badge-price"><i class="fa-solid fa-dollar-sign me-1"></i>' +
+              escapeHtml(price) +
+              '</span>'
+            : '';
+
+          card.innerHTML =
+            '<div class="d-flex justify-content-between align-items-start mb-1">' +
+            '<div>' +
+            '<div class="fw-semibold" style="font-size:0.9rem;">' +
+            escapeHtml(String(name)) +
+            '</div>' +
+            '<div class="text-muted service-tag">' +
+            escapeHtml(categoryText) +
+            '</div>' +
+            '</div>' +
+            priceBadge +
+            '</div>' +
+            '<div>' +
+            detailsList.join('') +
+            '</div>' +
+            '<div class="mt-2 d-flex justify-content-between gap-1">' +
+            '<button type="button" class="btn btn-sm btn-outline-secondary flex-fill me-1" onclick="openMoreInfoFromSearch(' +
+            idx +
+            ')">' +
+            escapeHtml(t.btnMoreInfo) +
+            '</button>' +
+            '<button type="button" class="btn btn-sm btn-outline-primary flex-fill" onclick="addToCartFromSearch(' +
+            idx +
+            ')">' +
+            '<i class="fa-solid fa-plus me-1"></i>' +
+            escapeHtml(t.btnAddToList) +
+            '</button>' +
+            '</div>';
+
+          colDiv.appendChild(card);
+          container.appendChild(colDiv);
+        });
+      }
+
+      function openMoreInfoFromSearch(index) {
+        const item = searchResults[index];
+        if (!item) return;
+        openMoreInfo(item);
+      }
+
+      function addToCartFromSearch(index) {
+        const item = searchResults[index];
+        if (!item) return;
+        addToCartFromItem(item);
+      }
+
+      /* CATEGORIAS E ABA DE SERVIÇOS */
+
+      function renderCategories() {
+        const container = document.getElementById('categoriesContainer');
+        const msg = document.getElementById('noCategoriesMessage');
+        const t = I18N[currentLang];
+        container.innerHTML = '';
+
+        if (!catalogData.categories || catalogData.categories.length === 0) {
+          msg.classList.remove('d-none');
+          return;
+        }
+
+        msg.classList.add('d-none');
+
+        const hintText =
+          currentLang === 'pt'
+            ? 'Toque para ver opções'
+            : currentLang === 'en'
+            ? 'Tap to see options'
+            : 'Toca para ver opciones';
+
+        catalogData.categories.forEach(function (cat) {
+          const col = document.createElement('div');
+          col.className = 'col-6';
+
+          const card = document.createElement('button');
+          card.type = 'button';
+          card.className =
+            'card category-card w-100 text-start px-2 py-2 border-0';
+          card.onclick = function () {
+            openServicesModal(cat);
+          };
+
+          card.innerHTML =
+            '<div class="d-flex align-items-center">' +
+            '<div class="me-2 category-icon text-primary">' +
+            '<i class="fa-solid fa-mountain-sun"></i>' +
+            '</div>' +
+            '<div class="flex-grow-1">' +
+            '<div class="fw-semibold" style="font-size:0.9rem;">' +
+            escapeHtml(cat || 'Sin categoría') +
+            '</div>' +
+            '<div class="text-muted" style="font-size:0.75rem;">' +
+            escapeHtml(hintText) +
+            '</div>' +
+            '</div>' +
+            '</div>';
+
+          col.appendChild(card);
+          container.appendChild(col);
+        });
+      }
+
+      function openServicesModal(category) {
+        const pageHome = document.getElementById('pageHome');
+        const pageServices = document.getElementById('pageServices');
+        const container = document.getElementById('servicesPageContainer');
+        const msg = document.getElementById('noServicesPageMessage');
+        const titleEl = document.getElementById('servicesPageTitle');
+        const subtitleEl = document.getElementById('servicesPageSubtitle');
+        const t = I18N[currentLang];
+
+        currentCategoryForServices = category;
+
+        pageHome.classList.add('d-none');
+        pageServices.classList.remove('d-none');
+
+        titleEl.textContent = category || 'Opciones';
+        subtitleEl.textContent = t.categoryHint;
+
+        container.innerHTML = '';
+
+        const filtered = (catalogData.items || []).filter(function (item) {
+          return (item.category || '') === category;
+        });
+
+        currentServiceItems = filtered;
+
+        msg.textContent = t.noServicesMessage;
+
+        if (filtered.length === 0) {
+          msg.classList.remove('d-none');
+        } else {
+          msg.classList.add('d-none');
+        }
+
+        filtered.forEach(function (item, idx) {
+          const cols = item.cols || [];
+
+          const tituloA = (cols[TITLE_MAIN_COL_INDEX] || '')
+            .toString()
+            .trim();
+          const tituloB = (cols[TITLE_ACTIVITY_COL_INDEX] || '')
+            .toString()
+            .trim();
+          const name =
+            tituloA && tituloB
+              ? tituloA + ' - ' + tituloB
+              : tituloB || tituloA || 'Excursión';
+
+          let priceNumber = null;
+          const detailsList = [];
+
+          for (
+            let i = 1;
+            i < cols.length && i < (catalogData.headers || []).length;
+            i++
+          ) {
+            const headerRaw =
+              (catalogData.headers && catalogData.headers[i]) ||
+              'Info ' + (i + 1);
+            const header = String(headerRaw).trim();
+            const hLower = header.toLowerCase();
+
+            if (!cols[i]) continue;
+
+            // pula OBS, Comisión e Neto na interface
+            if (hLower.indexOf('obs') === 0) continue;
+            if (
+              hLower.startsWith('comision') ||
+              hLower.startsWith('comisión') ||
+              hLower.startsWith('neto')
+            )
+              continue;
+
+            if (hLower.startsWith('precio')) {
+              const num = normalizePriceNumber(cols[i]);
+              if (num != null) {
+                priceNumber = num;
+              }
+              continue; // preço só no badge
+            }
+
+            const value = String(cols[i]);
+
+            detailsList.push(
+              '<div class="minicard-text"><strong>' +
+                escapeHtml(header) +
+                ':</strong> ' +
+                '<span>' +
+                escapeHtml(value) +
+                '</span></div>'
+            );
+          }
+
+          const price =
+            priceNumber != null ? formatPriceForUI(priceNumber) : '';
+
+          const colDiv = document.createElement('div');
+          colDiv.className = 'col-12 col-sm-6 col-md-4';
+
+          const card = document.createElement('div');
+          card.className = 'card service-card p-2 h-100';
+
+          const priceBadge = price
+            ? '<span class="badge bg-success badge-price"><i class="fa-solid fa-dollar-sign me-1"></i>' +
+              escapeHtml(price) +
+              '</span>'
+            : '';
+
+          card.innerHTML =
+            '<div class="d-flex justify-content-between align-items-start mb-1">' +
+            '<div>' +
+            '<div class="fw-semibold" style="font-size:0.9rem;">' +
+            escapeHtml(String(name)) +
+            '</div>' +
+            '<div class="text-muted service-tag">' +
+            escapeHtml(category || '') +
+            '</div>' +
+            '</div>' +
+            priceBadge +
+            '</div>' +
+            '<div>' +
+            detailsList.join('') +
+            '</div>' +
+            '<div class="mt-2 d-flex justify-content-between gap-1">' +
+            '<button type="button" class="btn btn-sm btn-outline-secondary flex-fill me-1" onclick="openMoreInfoFromIndex(' +
+            idx +
+            ')">' +
+            escapeHtml(t.btnMoreInfo) +
+            '</button>' +
+            '<button type="button" class="btn btn-sm btn-outline-primary flex-fill" onclick="addToCartFromIndex(' +
+            idx +
+            ')">' +
+            '<i class="fa-solid fa-plus me-1"></i>' +
+            escapeHtml(t.btnAddToList) +
+            '</button>' +
+            '</div>';
+
+          colDiv.appendChild(card);
+          container.appendChild(colDiv);
+        });
+      }
+
+      function goBackToHomeFromServices() {
+        const pageHome = document.getElementById('pageHome');
+        const pageServices = document.getElementById('pageServices');
+        pageServices.classList.add('d-none');
+        pageHome.classList.remove('d-none');
+        currentCategoryForServices = null;
+      }
+
+      function openMoreInfoFromIndex(index) {
+        const item = currentServiceItems[index];
+        if (!item) return;
+        openMoreInfo(item);
+      }
+
+      function addToCartFromIndex(index) {
+        const item = currentServiceItems[index];
+        if (!item) return;
+        addToCartFromItem(item);
+      }
+
+      /* OBS / MÁS INFO */
+
+      function ensureObsColIndexes() {
+        if (obsColumnsComputed) return;
+
+        const headers = catalogData.headers || [];
+        for (let i = 0; i < headers.length; i++) {
+          const h = String(headers[i] || '').toLowerCase().trim();
+          if (
+            h === 'obs' ||
+            h === 'obs es' ||
+            h === 'obs esp' ||
+            h === 'obs (es)'
+          ) {
+            if (obsColIndexes.es == null) obsColIndexes.es = i;
+          } else if (
+            h === 'obs pt' ||
+            h === 'obs (pt)' ||
+            h === 'obs pt-br'
+          ) {
+            if (obsColIndexes.pt == null) obsColIndexes.pt = i;
+          } else if (h === 'obs en' || h === 'obs (en)') {
+            if (obsColIndexes.en == null) obsColIndexes.en = i;
+          }
+        }
+
+        // fallback fixo: G/H/I
+        if (obsColIndexes.es == null && headers.length >= 7) {
+          obsColIndexes.es = 6;
+        }
+        if (obsColIndexes.pt == null && headers.length >= 8) {
+          obsColIndexes.pt = 7;
+        }
+        if (obsColIndexes.en == null && headers.length >= 9) {
+          obsColIndexes.en = 8;
+        }
+
+        obsColumnsComputed = true;
+      }
+
+      function openMoreInfo(item) {
+        const cols = item.cols || [];
+        const tituloA = (cols[TITLE_MAIN_COL_INDEX] || '')
+          .toString()
+          .trim();
+        const tituloB = (cols[TITLE_ACTIVITY_COL_INDEX] || '')
+          .toString()
+          .trim();
+        const name =
+          tituloA && tituloB
+            ? tituloA + ' - ' + tituloB
+            : tituloB || tituloA || 'Excursión';
+
+        const t = I18N[currentLang];
+
+        ensureObsColIndexes();
+
+        let idx = obsColIndexes.es;
+        if (
+          currentLang === 'pt' &&
+          typeof obsColIndexes.pt === 'number' &&
+          obsColIndexes.pt >= 0
+        ) {
+          idx = obsColIndexes.pt;
+        } else if (
+          currentLang === 'en' &&
+          typeof obsColIndexes.en === 'number' &&
+          obsColIndexes.en >= 0
+        ) {
+          idx = obsColIndexes.en;
+        }
+
+        let info = '';
+        if (typeof idx === 'number' && idx >= 0 && cols.length > idx) {
+          info = cols[idx] || '';
+        }
+
+        if (
+          (!info || info === '') &&
+          typeof obsColIndexes.es === 'number' &&
+          obsColIndexes.es >= 0 &&
+          cols.length > obsColIndexes.es
+        ) {
+          info = cols[obsColIndexes.es] || '';
+        }
+
+        if (!info) info = t.moreInfoEmpty;
+
+        document.getElementById('moreInfoTitle').textContent = name;
+        document.getElementById('moreInfoBody').textContent = info;
+
+        const moreInfoModal = new bootstrap.Modal(
+          document.getElementById('moreInfoModal')
+        );
+        moreInfoModal.show();
+      }
+
+      function copyMoreInfoToClipboard() {
+        const text = document.getElementById('moreInfoBody').textContent || '';
+        if (!text) return;
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard
+            .writeText(text)
+            .then(function () {
+              showCopyInfoFeedback(true);
+            })
+            .catch(function () {
+              fallbackCopyText(text);
+            });
+        } else {
+          fallbackCopyText(text);
+        }
+      }
+
+      function fallbackCopyText(text) {
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        document.body.appendChild(textarea);
+        textarea.select();
+        try {
+          document.execCommand('copy');
+          showCopyInfoFeedback(true);
+        } catch (e) {
+          console.error('No se pudo copiar el texto', e);
+          showCopyInfoFeedback(false);
+        }
+        document.body.removeChild(textarea);
+      }
+
+      function showCopyInfoFeedback(success) {
+        const el = document.getElementById('copyInfoFeedback');
+        const t = I18N[currentLang];
+        if (!el) return;
+
+        if (success) {
+          el.textContent = t.copyInfoSuccess;
+          el.classList.remove('text-danger');
+          el.classList.add('text-success');
+        } else {
+          el.textContent = t.copyInfoFail;
+          el.classList.remove('text-success');
+          el.classList.add('text-danger');
+        }
+
+        el.style.display = 'block';
+        clearTimeout(window.copyInfoTimeout);
+        window.copyInfoTimeout = setTimeout(function () {
+          el.style.display = 'none';
+        }, 2000);
+      }
+
+      /* ADIÇÃO AO CARRINHO */
+
+      function showAddingToCartModal() {
+        const t = I18N[currentLang];
+        const msgEl = document.getElementById('addingToCartMessage');
+        if (msgEl) {
+          msgEl.textContent = t.addingToCartMsg;
+        }
+        const el = document.getElementById('addingToCartModal');
+        if (!el) return;
+        if (!addingToCartModalInstance) {
+          addingToCartModalInstance = new bootstrap.Modal(el);
+        }
+        addingToCartModalInstance.show();
+      }
+
+      function updateAddingToCartMessageDone() {
+        const t = I18N[currentLang];
+        const msgEl = document.getElementById('addingToCartMessage');
+        if (msgEl) {
+          msgEl.textContent = t.addingToCartDone;
+        }
+      }
+
+      function hideAddingToCartModal() {
+        if (addingToCartModalInstance) {
+          addingToCartModalInstance.hide();
+        }
+      }
+
+      function openCartFromPopup() {
+        hideAddingToCartModal();
+        openCartModal();
+      }
+
+      function addToCartFromItem(item) {
+        showAddingToCartModal();
+
+        const cols = item.cols || [];
+        const tituloA = (cols[TITLE_MAIN_COL_INDEX] || '')
+          .toString()
+          .trim();
+        const tituloB = (cols[TITLE_ACTIVITY_COL_INDEX] || '')
+          .toString()
+          .trim();
+        const name =
+          tituloA && tituloB
+            ? tituloA + ' - ' + tituloB
+            : tituloB || tituloA || 'Excursión';
+
+        let priceNumber = null;
+        let comisionNumber = null;
+        let netoNumber = null;
+
+        if (catalogData.headers) {
+          for (
+            let i = 0;
+            i < cols.length && i < catalogData.headers.length;
+            i++
+          ) {
+            const header = String(catalogData.headers[i] || '').toLowerCase();
+            const parsed = normalizePriceNumber(cols[i]);
+            if (header.indexOf('precio') === 0 && priceNumber === null) {
+              priceNumber = parsed;
+            } else if (
+              (header.indexOf('comision') === 0 ||
+                header.indexOf('comisión') === 0) &&
+              comisionNumber === null
+            ) {
+              comisionNumber = parsed;
+            } else if (header.indexOf('neto') === 0 && netoNumber === null) {
+              netoNumber = parsed;
+            }
+          }
+        }
+
+        const cartItem = {
+          category: item.category || '',
+          name: name,
+          priceArs: priceNumber,
+          comisionArs: comisionNumber,
+          netoArs: netoNumber,
+          detailCols: cols,
+          rowIndex: item.rowIndex || null,
+          date: '',
+          qty: 1 // quantidade padrão = 1 pax
+        };
+
+        cart.push(cartItem);
+        updateCartUI();
+
+        const totalArs = calculateCartTotalArs();
+        const totalStr = formatPriceArs(totalArs);
+        const t = I18N[currentLang];
+        showCartFeedback(t.cartFeedback(cart.length, totalStr));
+        updateAddingToCartMessageDone();
+      }
+
+      function showCartFeedback(message) {
+        const el = document.getElementById('cartFeedback');
+        if (!el) return;
+        el.textContent = message;
+        el.classList.remove('d-none');
+        clearTimeout(window.cartFeedbackTimeout);
+        window.cartFeedbackTimeout = setTimeout(function () {
+          el.classList.add('d-none');
+        }, 2500);
+      }
+
+      /* CARRINHO */
+
+      function updateCartQty(index, value) {
+        if (index < 0 || index >= cart.length) return;
+        let n = parseInt(value, 10);
+        if (isNaN(n) || n <= 0) n = 1;
+        cart[index].qty = n;
+        updateCartUI();
+      }
+
+      function updateCartUI() {
+        const count = cart.length;
+        const btn = document.getElementById('cartFloatingBtn');
+        const label = document.getElementById('cartCountLabel');
+        const container = document.getElementById('cartItemsContainer');
+        const emptyMsg = document.getElementById('cartEmptyMessage');
+        const badge = document.getElementById('cartModalCountBadge');
+        const t = I18N[currentLang];
+
+        label.textContent = count;
+        badge.textContent = count;
+
+        btn.classList.remove('d-none');
+
+        if (count > 0) {
+          btn.classList.remove('btn-primary');
+          btn.classList.add('btn-danger');
+          emptyMsg.classList.add('d-none');
+        } else {
+          btn.classList.remove('btn-danger');
+          btn.classList.add('btn-primary');
+          emptyMsg.textContent = t.cartEmpty;
+          emptyMsg.classList.remove('d-none');
+        }
+
+        container.innerHTML = '';
+
+        cart.forEach(function (item, index) {
+          const card = document.createElement('div');
+          card.className = 'card service-card p-2';
+
+          const qty = item.qty != null && item.qty > 0 ? item.qty : 1;
+
+          const unitPrice =
+            item.priceArs != null && !isNaN(item.priceArs)
+              ? item.priceArs
+              : null;
+
+          const lineTotal =
+            unitPrice != null ? unitPrice * qty : null;
+
+          const unitPriceStr =
+            unitPrice != null ? formatPriceForUI(unitPrice) : '';
+          const lineTotalStr =
+            lineTotal != null ? formatPriceForUI(lineTotal) : '';
+
+          const priceHtml = lineTotalStr
+            ? '<div class="fw-semibold" style="font-size:0.85rem;">' +
+              escapeHtml(String(lineTotalStr)) +
+              '</div>'
+            : '';
+
+          const unitHtml = unitPriceStr
+            ? '<small class="text-muted" style="font-size:0.75rem;">' +
+              escapeHtml(String(unitPriceStr)) +
+              ' / pax</small>'
+            : '';
+
+          card.innerHTML =
+            '<div class="d-flex justify-content-between align-items-start mb-1">' +
+            '<div>' +
+            '<div class="fw-semibold" style="font-size:0.9rem;">' +
+            escapeHtml(String(item.name)) +
+            '</div>' +
+            '<div class="text-muted service-tag">' +
+            escapeHtml(item.category || '') +
+            '</div>' +
+            '</div>' +
+            '</div>' +
+            '<div class="d-flex justify-content-between align-items-center mb-2" style="gap:8px;">' +
+            '<div class="d-flex align-items-center" style="font-size:0.8rem;">' +
+            '<span class="me-1">PAX</span>' +
+            '<input type="number" min="1" class="form-control form-control-sm" style="width:70px;" value="' +
+            qty +
+            '" onchange="updateCartQty(' +
+            index +
+            ', this.value)" />' +
+            '</div>' +
+            '<div class="text-end">' +
+            priceHtml +
+            '<br />' +
+            unitHtml +
+            '</div>' +
+            '</div>' +
+            '<button type="button" class="btn btn-sm btn-outline-danger" onclick="removeFromCart(' +
+            index +
+            ')">' +
+            '<i class="fa-solid fa-trash-can me-1"></i>' +
+            escapeHtml(t.cartDeleteLabel) +
+            '</button>';
+
+          container.appendChild(card);
+        });
+      }
+
+      function openCartModal() {
+        const modal = new bootstrap.Modal(document.getElementById('cartModal'));
+        modal.show();
+      }
+
+      function removeFromCart(index) {
+        if (index < 0 || index >= cart.length) return;
+        cart.splice(index, 1);
+        updateCartUI();
+      }
+
+      function clearCart() {
+        const t = I18N[currentLang];
+        if (cart.length === 0) return;
+        if (!confirm(t.confirmClearCart)) return;
+        cart = [];
+        updateCartUI();
+      }
+
+      function calculateCartTotalArs() {
+        return cart.reduce(function (acc, item) {
+          const qty =
+            item.qty != null && item.qty > 0 ? Number(item.qty) : 1;
+
+          const unit =
+            typeof item.priceArs === 'number'
+              ? item.priceArs
+              : normalizePriceNumber(item.priceArs);
+
+          if (!isNaN(unit)) {
+            return acc + unit * qty;
+          }
+          return acc;
+        }, 0);
+      }
+
+      /* CHECKOUT / WHATSAPP */
+
+      function openCheckoutModal() {
+        const t = I18N[currentLang];
+
+        if (cart.length === 0) {
+          alert(t.alertCartEmpty);
+          return;
+        }
+
+        const container = document.getElementById('checkoutItemsContainer');
+        container.innerHTML = '';
+
+        cart.forEach(function (item, index) {
+          const wrapper = document.createElement('div');
+          wrapper.className = 'border rounded p-2';
+
+          wrapper.innerHTML =
+            '<div class="fw-semibold" style="font-size:0.85rem;">' +
+            escapeHtml(String(item.name)) +
+            '</div>' +
+            '<div class="text-muted service-tag mb-1">' +
+            escapeHtml(item.category || '') +
+            '</div>' +
+            '<label class="form-label mb-1 checkout-date-label" style="font-size:0.78rem;">' +
+            escapeHtml(t.dateLabelPerService) +
+            '</label>' +
+            '<input type="date" class="form-control form-control-sm checkout-date-input" data-index="' +
+            index +
+            '"/>';
+
+          container.appendChild(wrapper);
+        });
+
+        const checkoutModal = new bootstrap.Modal(
+          document.getElementById('checkoutModal')
+        );
+        checkoutModal.show();
+      }
+
+      function sendWhatsAppRequest() {
+        const t = I18N[currentLang];
+
+        if (cart.length === 0) {
+          alert(t.alertCartEmpty);
+          return;
+        }
+
+        const guestName = document
+          .getElementById('guestNameInput')
+          .value.trim();
+        const guestPhone = document
+          .getElementById('guestPhoneInput')
+          .value.trim();
+        const hotel = document.getElementById('hotelInput').value.trim();
+
+        if (!guestName) {
+          alert(t.alertGuestNameRequired);
+          return;
+        }
+        if (!guestPhone) {
+          alert(t.alertGuestPhoneRequired);
+          return;
+        }
+
+        const dateInputs = document.querySelectorAll('.checkout-date-input');
+        dateInputs.forEach(function (input) {
+          const idx = parseInt(input.getAttribute('data-index'), 10);
+          if (!isNaN(idx) && cart[idx]) {
+            cart[idx].date = input.value || '';
+          }
+        });
+
+        const totalArs = calculateCartTotalArs();
+        const totalStr = formatPriceArs(totalArs);
+        const consultaId = generateConsultaId();
+
+        const lines = [];
+        const itemsPayload = [];
+
+        cart.forEach(function (item) {
+          const cols = item.detailCols || [];
+          const actividad = (cols[TITLE_ACTIVITY_COL_INDEX] || '')
+            .toString()
+            .trim();
+          const categoria = (cols[SERVICE_TYPE_COL_INDEX] || '')
+            .toString()
+            .trim();
+          const dateIso = item.date || '';
+          const dateDMY = dateIso ? formatDateToDMY(dateIso) : '';
+          const qty =
+            item.qty != null && item.qty > 0 ? Number(item.qty) : 1;
+
+          const priceUnitArs = item.priceArs || 0;
+          const comisionUnitArs = item.comisionArs || 0;
+          const netoUnitArs = item.netoArs || 0;
+
+          const lineTotalArs = priceUnitArs * qty;
+          const lineTotalStr = formatPriceArs(lineTotalArs);
+
+          let line = '';
+          if (dateDMY) {
+            line += dateDMY + ' - ';
+          }
+          line += actividad;
+          if (categoria) {
+            line += ' - ' + categoria;
+          }
+          if (qty > 1) {
+            line += ' (x' + qty + ')';
+          }
+          line += ' - ' + lineTotalStr;
+
+          lines.push(line);
+
+          itemsPayload.push({
+            actividad: actividad,
+            categoria: categoria,
+            dateIso: dateIso,
+            dateDMY: dateDMY,
+            qty: qty,
+            priceArs: priceUnitArs,
+            comisionArs: comisionUnitArs,
+            netoArs: netoUnitArs
+          });
+        });
+
+        let message = '';
+        if (currentLang === 'pt') {
+          message =
+            'Olá, me chamo ' +
+            guestName +
+            ', gostaria de solicitar informações/reservar os seguintes serviços:\n\n';
+        } else if (currentLang === 'en') {
+          message =
+            'Hello, my name is ' +
+            guestName +
+            ', I would like to request information/book the following services:\n\n';
+        } else {
+          message =
+            'Hola, me llamo ' +
+            guestName +
+            ', me gustaría solicitar informaciones/reservar los siguientes servicios:\n\n';
+        }
+
+        message += lines.join('\n') + '\n\n';
+        message += 'total: ' + totalStr + '\n\n';
+
+        if (currentLang === 'pt') {
+          message += 'consulta gerada: ' + consultaId + '\n';
+        } else if (currentLang === 'en') {
+          message += 'generated query: ' + consultaId + '\n';
+        } else {
+          message += 'consulta generada: ' + consultaId + '\n';
+        }
+
+        const rawPhone = whatsappPhone || '5492901533382';
+        const phone = String(rawPhone).replace(/\D/g, '');
+        const encoded = encodeURIComponent(message);
+        const url = 'https://wa.me/' + phone + '?text=' + encoded;
+
+        const payload = {
+          userContext: currentUserContext,
+          paxName: guestName,
+          phone: guestPhone,
+          hotel: hotel,
+          consultaId: consultaId,
+          items: itemsPayload,
+          totalArs: totalArs
+        };
+
+        google.script.run
+          .withSuccessHandler(function (res) {
+            window.open(url, '_blank');
+          })
+          .withFailureHandler(function (err) {
+            console.error(err);
+            window.open(url, '_blank');
+          })
+          .registrarReserva(payload);
+      }
+
+      function generateConsultaId() {
+        const prefix =
+          (currentUserContext.prefijo || '') + (currentUserContext.id || '');
+        const rand = generateRandomLetters(3);
+        return prefix + rand;
+      }
+
+      function generateRandomLetters(n) {
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        let out = '';
+        for (let i = 0; i < n; i++) {
+          const idx = Math.floor(Math.random() * chars.length);
+          out += chars.charAt(idx);
+        }
+        return out;
+      }
+
+      /* UTILITÁRIAS */
+
+      function escapeHtml(value) {
+        if (value === null || value === undefined) return '';
+        return String(value)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+      }
+
+      function formatDateToDMY(dateStr) {
+        if (!dateStr) return '';
+        const parts = dateStr.split('-');
+        if (parts.length !== 3) return dateStr;
+        return parts[2] + '/' + parts[1] + '/' + parts[0];
+      }
+
+      function normalizePriceNumber(value) {
+        if (value === null || value === undefined) return null;
+        let s = String(value).trim();
+        if (!s) return null;
+        s = s.replace(/\s/g, '');
+        if (s.indexOf(',') > -1 && s.indexOf('.') === -1) {
+          s = s.replace(/\./g, '');
+          s = s.replace(',', '.');
+        } else {
+          s = s.replace(/,/g, '');
+        }
+        const n = parseFloat(s);
+        if (isNaN(n)) return null;
+        return n;
+      }
+
+      function formatPriceForUI(amountArs) {
+        if (amountArs == null || isNaN(amountArs)) return '';
+        let converted = amountArs;
+        let prefix = '';
+
+        if (currentCurrency === 'brl') {
+          if (exchangeRates.brl && exchangeRates.brl > 0) {
+            converted = amountArs / exchangeRates.brl;
+          }
+          prefix = 'R$ ';
+        } else if (currentCurrency === 'usd') {
+          if (exchangeRates.usd && exchangeRates.usd > 0) {
+            converted = amountArs / exchangeRates.usd;
+          }
+          prefix = 'U$D ';
+        } else {
+          prefix = 'AR$ ';
+        }
+
+        let locale = 'es-AR';
+        if (currentLang === 'pt') {
+          locale = 'pt-BR';
+        } else if (currentLang === 'en') {
+          locale = 'en-US';
+        }
+
+        try {
+          return (
+            prefix +
+            converted.toLocaleString(locale, {
+              minimumFractionDigits: 0,
+              maximumFractionDigits: 0
+            })
+          );
+        } catch (e) {
+          return prefix + Math.round(converted);
+        }
+      }
+
+      function formatPriceArs(amountArs) {
+        if (amountArs == null || isNaN(amountArs)) return '';
+        let locale = 'es-AR';
+        if (currentLang === 'pt') {
+          locale = 'pt-BR';
+        } else if (currentLang === 'en') {
+          locale = 'en-US';
+        }
+        try {
+          return (
+            'AR$ ' +
+            amountArs.toLocaleString(locale, {
+              minimumFractionDigits: 0,
+              maximumFractionDigits: 0
+            })
+          );
+        } catch (e) {
+          return 'AR$ ' + Math.round(amountArs);
+        }
+      }
+    </script>
+  </body>
 </html>
