@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+DOCTYPE html>
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
@@ -773,9 +773,14 @@
                 obsCols: { es: -1, pt: -1, en: -1 }
               };
 
+            // Fallback de logo/banner: funciona tanto no WebApp (GAS) quanto em hosting estático (GitHub/Vercel)
             if (!catalogData.logoUrl) {
-              catalogData.logoUrl = './banner.png';
+              const isGoogleHosted = /(^|\.)script\.google\.com$|(^|\.)googleusercontent\.com$/.test(location.hostname);
+              catalogData.logoUrl = isGoogleHosted
+                ? 'https://raw.githubusercontent.com/floresbrasileirosemushuaia-create/testecatalogo1/main/banner.png'
+                : './banner.png';
             }
+
 
             if (catalogData.logoUrl) {
               const img = document.getElementById('logoImg');
